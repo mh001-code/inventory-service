@@ -6,6 +6,7 @@ import com.orderprocessing.inventory.service.domain.model.StockMovementType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.UUID;
 
 @Component
@@ -22,5 +23,10 @@ public class StockMovementPersistenceAdapter implements StockMovementPersistence
     @Override
     public boolean existsByOrderIdAndType(UUID orderId, StockMovementType type) {
         return repository.existsByOrderIdAndType(orderId, type);
+    }
+
+    @Override
+    public List<StockMovement> findByOrderIdAndType(UUID orderId, StockMovementType type) {
+        return repository.findByOrderIdAndType(orderId, type);
     }
 }
