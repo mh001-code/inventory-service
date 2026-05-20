@@ -6,12 +6,14 @@ import com.orderprocessing.inventory.service.application.port.out.StockMovementP
 import com.orderprocessing.inventory.service.domain.model.StockMovement;
 import com.orderprocessing.inventory.service.domain.model.StockMovementType;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ReleaseStockService implements ReleaseStockUseCase {
@@ -22,6 +24,11 @@ public class ReleaseStockService implements ReleaseStockUseCase {
     @Override
     @Transactional
     public void execute(UUID orderId) {
+        if (stockMovementPersistencePort.existsByOrderIdAndType(orderId, StockMovementType.RELEASE)) {
+            log.info("Skipping duplicate order.cancelled: orderId={}", orderId);
+            return;
+        }
+
         List<StockMovement> reservations = stockMovementPersistencePort
                 .findByOrderIdAndType(orderId, StockMovementType.RESERVE);
 
