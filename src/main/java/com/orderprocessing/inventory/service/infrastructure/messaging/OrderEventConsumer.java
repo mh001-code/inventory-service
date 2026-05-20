@@ -21,20 +21,28 @@ public class OrderEventConsumer {
     @RabbitListener(queues = RabbitMQConfig.ORDER_CREATED_QUEUE)
     public void onOrderCreated(OrderCreatedEvent event) {
         log.info("Received order.created: orderId={}", event.orderId());
+        try {
+            List<ReserveStockUseCase.Item> items = event.items().stream()
+                    .map(i -> new ReserveStockUseCase.Item(i.productId(), i.quantity()))
+                    .toList();
 
-        List<ReserveStockUseCase.Item> items = event.items().stream()
-                .map(i -> new ReserveStockUseCase.Item(i.productId(), i.quantity()))
-                .toList();
-
-        reserveStockUseCase.execute(event.orderId(), items);
-        log.info("Stock reserved for orderId={}", event.orderId());
+            reserveStockUseCase.execute(event.orderId(), items);
+            log.info("Stock reserved for orderId={}", event.orderId());
+        } catch (Exception e) {
+            log.error("Failed to process order.created: orderId={}, error={}", event.orderId(), e.getMessage(), e);
+            throw e;
+        }
     }
 
     @RabbitListener(queues = RabbitMQConfig.ORDER_CANCELLED_QUEUE)
     public void onOrderCancelled(OrderCancelledEvent event) {
         log.info("Received order.cancelled: orderId={}", event.orderId());
-
-        releaseStockUseCase.execute(event.orderId());
-        log.info("Stock released for orderId={}", event.orderId());
+        try {
+            releaseStockUseCase.execute(event.orderId());
+            log.info("Stock released for orderId={}", event.orderId());
+        } catch (Exception e) {
+            log.error("Failed to process order.cancelled: orderId={}, error={}", event.orderId(), e.getMessage(), e);
+            throw e;
+        }
     }
 }
