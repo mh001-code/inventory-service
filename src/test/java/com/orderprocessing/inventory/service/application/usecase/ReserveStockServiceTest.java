@@ -8,10 +8,11 @@ import com.orderprocessing.inventory.service.domain.exception.ProductNotFoundExc
 import com.orderprocessing.inventory.service.domain.model.Product;
 import com.orderprocessing.inventory.service.domain.model.StockMovement;
 import com.orderprocessing.inventory.service.domain.model.StockMovementType;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -33,7 +34,8 @@ class ReserveStockServiceTest {
     @Mock
     private StockMovementPersistencePort stockMovementPersistencePort;
 
-    @InjectMocks
+    private final MeterRegistry meterRegistry = new SimpleMeterRegistry();
+
     private ReserveStockService reserveStockService;
 
     private UUID orderId;
@@ -42,6 +44,7 @@ class ReserveStockServiceTest {
 
     @BeforeEach
     void setUp() {
+        reserveStockService = new ReserveStockService(productPersistencePort, stockMovementPersistencePort, meterRegistry);
         orderId = UUID.randomUUID();
         productId = UUID.randomUUID();
         product = Product.create("Widget", "WGT-001", null, BigDecimal.TEN, 10);

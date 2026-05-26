@@ -5,6 +5,8 @@ import com.orderprocessing.inventory.service.application.port.out.ProductPersist
 import com.orderprocessing.inventory.service.application.port.out.StockMovementPersistencePort;
 import com.orderprocessing.inventory.service.domain.model.StockMovement;
 import com.orderprocessing.inventory.service.domain.model.StockMovementType;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -20,12 +22,17 @@ public class ReleaseStockService implements ReleaseStockUseCase {
 
     private final ProductPersistencePort productPersistencePort;
     private final StockMovementPersistencePort stockMovementPersistencePort;
+    private final MeterRegistry meterRegistry;
 
     @Override
     @Transactional
     public void execute(UUID orderId) {
         if (stockMovementPersistencePort.existsByOrderIdAndType(orderId, StockMovementType.RELEASE)) {
             log.info("Skipping duplicate order.cancelled: orderId={}", orderId);
+            Counter.builder("inventory.stock.released.total")
+                    .tag("result", "duplicate_skipped")
+                    .register(meterRegistry)
+                    .increment();
             return;
         }
 
@@ -40,5 +47,10 @@ public class ReleaseStockService implements ReleaseStockUseCase {
                     StockMovement.of(reservation.getProduct(), orderId, reservation.getQuantity(), StockMovementType.RELEASE)
             );
         }
+
+        Counter.builder("inventory.stock.released.total")
+                .tag("result", "success")
+                .register(meterRegistry)
+                .increment();
     }
 }

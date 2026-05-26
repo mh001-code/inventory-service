@@ -5,10 +5,11 @@ import com.orderprocessing.inventory.service.application.port.out.StockMovementP
 import com.orderprocessing.inventory.service.domain.model.Product;
 import com.orderprocessing.inventory.service.domain.model.StockMovement;
 import com.orderprocessing.inventory.service.domain.model.StockMovementType;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -28,7 +29,8 @@ class ReleaseStockServiceTest {
     @Mock
     private StockMovementPersistencePort stockMovementPersistencePort;
 
-    @InjectMocks
+    private final MeterRegistry meterRegistry = new SimpleMeterRegistry();
+
     private ReleaseStockService releaseStockService;
 
     private UUID orderId;
@@ -36,6 +38,7 @@ class ReleaseStockServiceTest {
 
     @BeforeEach
     void setUp() {
+        releaseStockService = new ReleaseStockService(productPersistencePort, stockMovementPersistencePort, meterRegistry);
         orderId = UUID.randomUUID();
         product = Product.create("Widget", "WGT-001", null, BigDecimal.TEN, 7);
     }
