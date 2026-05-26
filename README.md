@@ -6,6 +6,9 @@
   <img alt="PostgreSQL" src="https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql&logoColor=white">
   <img alt="RabbitMQ" src="https://img.shields.io/badge/RabbitMQ-3-FF6600?logo=rabbitmq&logoColor=white">
   <img alt="Docker" src="https://img.shields.io/badge/Docker-ready-2496ED?logo=docker&logoColor=white">
+  <img alt="Swagger" src="https://img.shields.io/badge/Swagger-UI-85EA2D?logo=swagger&logoColor=black">
+  <img alt="Prometheus" src="https://img.shields.io/badge/Prometheus-metrics-E6522C?logo=prometheus&logoColor=white">
+  <img alt="Zipkin" src="https://img.shields.io/badge/Zipkin-tracing-FE7139">
   <img alt="CI" src="https://github.com/mh001-code/inventory-service/actions/workflows/ci.yml/badge.svg">
 </p>
 
@@ -113,6 +116,10 @@ com.orderprocessing.inventory.service
 | [Lombok](https://projectlombok.org/) | — | Boilerplate reduction |
 | [JUnit 5 + Mockito](https://junit.org/junit5/) | — | Unit testing |
 | [Testcontainers](https://testcontainers.com/) | — | Integration tests with real PostgreSQL + RabbitMQ |
+| [Spring Boot Actuator](https://docs.spring.io/spring-boot/docs/current/reference/html/actuator.html) | — | Health checks + metrics endpoints |
+| [Micrometer + Prometheus](https://micrometer.io/) | — | Métricas de reserva/liberação de estoque |
+| [Micrometer Tracing + Zipkin](https://micrometer.io/docs/tracing) | — | Distributed tracing |
+| [springdoc-openapi](https://springdoc.org/) | 2.8 | Swagger UI em `/swagger-ui.html` |
 | [Docker](https://www.docker.com/) | — | Containerization (multi-stage build) |
 | [GitHub Actions](https://github.com/features/actions) | — | CI/CD pipeline |
 
@@ -202,6 +209,22 @@ POST /products
 | `200 OK` | Query or stock update successful |
 | `404 Not Found` | Product not found |
 | `409 Conflict` | SKU already registered |
+
+---
+
+## Observability
+
+| Endpoint | Descrição |
+|---|---|
+| `GET /actuator/health` | Status da aplicação |
+| `GET /actuator/prometheus` | Métricas em formato Prometheus |
+| `GET /swagger-ui.html` | Documentação interativa da API |
+
+**Métricas de negócio:**
+- `inventory_stock_reserved_total{result="success|insufficient_stock|duplicate_skipped"}` — reservas de estoque
+- `inventory_stock_released_total{result="success|duplicate_skipped"}` — liberações de estoque
+
+**Distributed tracing:** o `traceId` iniciado no `order-service` é propagado via RabbitMQ headers e aparece automaticamente em todos os logs desta aplicação.
 
 ---
 
